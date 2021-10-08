@@ -63,6 +63,7 @@ function main() {
       exit 1
     fi
 
+    # prepare out directory
     out_dir="workspace/out/libmaxminddb_${version}_${platform}"
     echo "${platform}: building to '${out_dir}' ..."
 
@@ -73,6 +74,17 @@ function main() {
     mkdir -p "$out_dir"
     chmod 777 "$out_dir"
 
+    # copy notice
+    {
+      cat "${libmaxminddb_dir}/NOTICE"
+      echo
+      echo '----------'
+      echo
+      echo 'Sources: https://github.com/maxmind/libmaxminddb'
+      echo 'Built by: https://github.com/nathan818fr/libmaxminddb-build'
+    } >"${out_dir}/NOTICE"
+
+    # build
     case "$platform" in
     linux*)
       image="libmaxminddb-build-${platform}"
@@ -90,8 +102,9 @@ function main() {
       ;;
     esac
 
+    # create archives
     echo "${platform}: compressing ..."
-    ( cd "$(dirname "$out_dir")" && tar -czvf "$(basename "$out_dir").tar.gz" "$(basename "$out_dir")" )
+    (cd "$(dirname "$out_dir")" && tar -czvf "$(basename "$out_dir").tar.gz" "$(basename "$out_dir")")
 
     echo "${platform}: done"
   done
