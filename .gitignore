@@ -1,5 +1,6 @@
 ### App
-/workspace
+/cache
+/out
 
 ### IDE
 # JetBrains IDE
