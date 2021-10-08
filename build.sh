@@ -63,7 +63,7 @@ function main() {
       exit 1
     fi
 
-    out_dir="workspace/out/${platform}_${version}"
+    out_dir="workspace/out/libmaxminddb_${version}_${platform}"
     echo "${platform}: building to '${out_dir}' ..."
 
     if [[ -d "$out_dir" ]]; then
@@ -89,6 +89,9 @@ function main() {
       return 1 # theoretically unreachable statement
       ;;
     esac
+
+    echo "${platform}: compressing ..."
+    ( cd "$(dirname "$out_dir")" && tar -czvf "$(basename "$out_dir").tar.gz" "$(basename "$out_dir")" )
 
     echo "${platform}: done"
   done
