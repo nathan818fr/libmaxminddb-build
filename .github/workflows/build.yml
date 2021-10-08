@@ -1,0 +1,68 @@
+---
+
+name: Build
+
+on:
+  - push
+
+jobs:
+
+  create-release:
+    runs-on: 'ubuntu-20.04'
+    outputs:
+      upload_url: ${{ steps.create-release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create-release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: ncipollo/release-action@v1
+        with:
+          omitBody: true
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    runs-on: ${{ matrix.os }}
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        platform:
+          - 'linux-arm64v8'
+          - 'linux-armv6'
+          - 'linux-armv7'
+          - 'linux-x64'
+          - 'linuxmusl-arm64v8'
+          - 'linuxmusl-x64'
+        include:
+          - os: macos-10.15
+            platform: 'darwin-x64'
+          - os: macos-10.15
+            platform: 'darwin-arm64v8'
+          - os: windows-2019
+            platform: 'win32-x64'
+          - os: windows-2019
+            platform: 'win32-ia32'
+          - os: windows-2019
+            platform: 'win32-arm64v8'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build
+        id: build-release
+        run: ./build.sh $(cat LIBMAXMINDDB_VERSION.txt) ${{ matrix.platform }}
+        shell: bash
+      - name: Upload Release Asset (.tar.gz)
+        id: upload-release-asset-gz
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: out/libmaxminddb_*_${{ matrix.platform }}.tar.gz
+          artifactContentType: application/gzip
+          artifactErrorsFailBuild: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
