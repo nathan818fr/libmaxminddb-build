@@ -1,6 +1,6 @@
 FROM alpine:3.12
 
-# Create Alpine 3.12 (musl 1.1.24) container for building musl-based Linux x64 binaries
+# Create Alpine 3.12 (musl 1.1.24) image for building musl-based Linux x64 binaries
 
 RUN apk update && apk upgrade && \
     apk --update --no-cache add \
@@ -14,5 +14,4 @@ RUN addgroup -g 1000 build && \
 USER build
 WORKDIR /home/build
 
-ENV PLATFORM="linuxmusl-x64" \
-    FLAGS="-march=westmere"
+ENV FLAGS="-march=westmere"

@@ -1,6 +1,6 @@
 FROM alpine:3.12
 
-# Create Alpine 3.12 (musl 1.1.24) container for building musl-based Linux ARM64v8 binaries
+# Create Alpine 3.12 (musl 1.1.24) image for building musl-based Linux ARM64v8 binaries
 
 RUN apk update && apk upgrade && \
     apk --update --no-cache add \
@@ -19,6 +19,5 @@ RUN addgroup -g 1000 build && \
 USER build
 WORKDIR /home/build
 
-ENV PLATFORM="linuxmusl-arm64v8" \
-    CHOST="aarch64-linux-musl" \
+ENV CHOST="aarch64-linux-musl" \
     FLAGS="-march=armv8-a"

@@ -1,43 +1,11 @@
 #!/bin/sh
 set -e
 
-CHOST="${CHOST:-}"
-FLAGS="${FLAGS:-} -fPIC"
-LDFLAGS="${LDFLAGS:-}"
+export FLAGS="${FLAGS:-} -fPIC -D_GLIBCXX_USE_CXX11_ABI=1"
+export LDFLAGS="${LDFLAGS:-}"
+export MAKEFLAGS="${MAKEFLAGS:-} -j$(nproc)"
 
-case "$PLATFORM" in
-linux*)
-  # Force new C++11 ABI compliance
-  FLAGS="${FLAGS} -D_GLIBCXX_USE_CXX11_ABI=1"
-  ;;
-esac
-
-export FLAGS
-export CFLAGS="$FLAGS"
-export CXXFLAGS="$FLAGS"
-export OBJCFLAGS="$FLAGS"
-export OBJCXXFLAGS="$FLAGS"
-export LDFLAGS
-if [ -z "$CHOST" ]; then export CC="gcc"; else export CC="${CHOST}-gcc"; fi # fix libtap compilation
-
-echo "PLATFORM=$PLATFORM"
-echo "CHOST=$CHOST"
-echo "FLAGS=$FLAGS"
-echo "LDFLAGS=$LDFLAGS"
-set -x
-{
-  cp -a "${LIBMAXMINDDB_DIR}/" sources/
-  cd sources
-  ./configure --host="$CHOST" --disable-binaries
-  make -j"$(nproc)"
-
-  if [ -z "$CHOST" ]; then # skip tests during cross-platform compilation
-    make check | grep -v '^ok '
-  fi
-
-  cp include/*.h src/.libs/libmaxminddb.a "$OUT_DIR"
-}
-set +x
+"$(dirname "$0")/with_autotools.sh"
 
 case "$PLATFORM" in
 linuxmusl*)

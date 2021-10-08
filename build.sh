@@ -1,6 +1,5 @@
 #!/bin/bash
 set -Eeuo pipefail
-shopt -s inherit_errexit
 umask 022
 
 supported_platforms=(
@@ -10,6 +9,8 @@ supported_platforms=(
   linux-x64
   linuxmusl-arm64v8
   linuxmusl-x64
+  darwin-x64
+  darwin-arm64v8
 )
 
 function docker() {
@@ -52,7 +53,7 @@ function main() {
     echo "libmaxminddb sources doesn't exists: downloading ..."
     temp_dst="${temp_dir}/libmaxminddb"
     mkdir -p "$temp_dst" && curl -fSL -- "$libmaxminddb_url" | tar -xz --strip-components 1 -C "$temp_dst"
-    mkdir -p "$libmaxminddb_dir" && mv -T "$temp_dst" "$libmaxminddb_dir"
+    mkdir -p "$libmaxminddb_dir" && mv "${temp_dst}/"* "$libmaxminddb_dir"
     echo "libmaxminddb sources downloaded: '${libmaxminddb_dir}'"
   fi
 
@@ -90,12 +91,27 @@ function main() {
       image="libmaxminddb-build-${platform}"
       docker build -t "$image" "./${platform}"
       docker run --rm \
+        -e "PLATFORM=${platform}" \
         -e "LIBMAXMINDDB_VERSION=${version}" \
         -e "LIBMAXMINDDB_DIR=/${libmaxminddb_dir}" \
         -e "OUT_DIR=/${out_dir}" \
         -v "${PWD}/workspace:/workspace" \
         -v "${PWD}/build:/build" \
-        "$image" sh -c "/build/linux.sh"
+        "$image" sh -c '/build/linux.sh'
+      ;;
+    darwin*)
+      if [[ "$platform" = 'darwin-arm64v8' ]]; then
+        export CHOST='aarch64-apple-darwin'
+        export FLAGS='-arch arm64'
+        export SDKROOT=$(xcrun -sdk macosx --show-sdk-path)
+      fi
+
+      _=_ \
+        PLATFORM="$platform" \
+        LIBMAXMINDDB_VERSION="$version" \
+        LIBMAXMINDDB_DIR="${PWD}/${libmaxminddb_dir}" \
+        OUT_DIR="${PWD}/${out_dir}" \
+        sh -c "cd $(printf %q "$temp_dir") && $(printf %q "${PWD}/build/macos.sh")"
       ;;
     *)
       return 1 # theoretically unreachable statement
@@ -104,7 +120,9 @@ function main() {
 
     # create archives
     echo "${platform}: compressing ..."
-    (cd "$(dirname "$out_dir")" && tar -czvf "$(basename "$out_dir").tar.gz" "$(basename "$out_dir")")
+    pushd "$(dirname "$out_dir")"
+    tar -czvf "$(basename "$out_dir").tar.gz" "$(basename "$out_dir")"
+    popd
 
     echo "${platform}: done"
   done

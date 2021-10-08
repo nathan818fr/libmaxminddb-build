@@ -14,5 +14,4 @@ RUN groupadd -g 1000 build && \
 USER build
 WORKDIR /home/build
 
-ENV PLATFORM="linux-x64" \
-    FLAGS="-march=westmere"
+ENV FLAGS="-march=westmere"

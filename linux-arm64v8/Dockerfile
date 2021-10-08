@@ -16,6 +16,5 @@ RUN groupadd -g 1000 build && \
 USER build
 WORKDIR /home/build
 
-ENV PLATFORM="linux-arm64v8" \
-    CHOST="aarch64-linux-gnu" \
+ENV CHOST="aarch64-linux-gnu" \
     FLAGS="-march=armv8-a"

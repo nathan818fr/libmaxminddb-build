@@ -23,6 +23,5 @@ RUN groupadd -g 1000 build && \
 USER build
 WORKDIR /home/build
 
-ENV PLATFORM="linux-armv6" \
-    CHOST="arm-rpi-linux-gnueabihf" \
+ENV CHOST="arm-rpi-linux-gnueabihf" \
     FLAGS="-march=armv6z -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard"
