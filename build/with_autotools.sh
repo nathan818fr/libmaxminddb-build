@@ -17,15 +17,18 @@ fi
 
 set -x
 
+# Build
 cp -a "${LIBMAXMINDDB_DIR}/" sources/
 cd sources
 ./configure --host="$CHOST" --disable-binaries
 make $MAKEFLAGS
 
+# Test
 if [ -z "$CHOST" ]; then # skip tests during cross-platform compilation
   make check | grep -v '^ok '
 fi
 
+# Copy
 cp include/*.h src/.libs/libmaxminddb.a "$OUT_DIR"
 
 exit 0

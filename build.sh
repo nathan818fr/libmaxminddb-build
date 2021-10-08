@@ -11,6 +11,9 @@ supported_platforms=(
   linux-x64
   linuxmusl-arm64v8
   linuxmusl-x64
+  win32-arm64v8
+  win32-ia32
+  win32-x64
 )
 
 function main() {
@@ -77,6 +80,18 @@ function main() {
     export SDKROOT=$(xcrun -sdk macosx --show-sdk-path)
     build_locally 'macos.sh'
     ;;
+  win32-x64)
+    export MSVC_ARCH=x64
+    build_locally 'win32.sh'
+    ;;
+  win32-ia32)
+    export MSVC_ARCH=Win32
+    build_locally 'win32.sh'
+    ;;
+  win32-arm64v8)
+    export MSVC_ARCH=ARM64
+    build_locally 'win32.sh'
+    ;;
   *)
     return 1 # theoretically unreachable statement
     ;;
@@ -116,7 +131,7 @@ function build_locally() {
     LIBMAXMINDDB_VERSION="$version" \
     LIBMAXMINDDB_DIR="$libmaxminddb_dir" \
     OUT_DIR="$out_dir" \
-    sh -c "cd $(printf %q "$temp_dir") && $(printf %q "${PWD}/build/macos.sh")"
+    sh -c "cd $(printf %q "$temp_dir") && $(printf %q "${PWD}/build/$1")"
 }
 
 function download_if_absent() {
@@ -129,8 +144,8 @@ function download_if_absent() {
     echo "${name} already exists: '${dst}'"
   else
     echo "${name} doesn't exists: downloading ..."
-    temp_dst="${temp_dir}/.$(echo "$url" | shasum | awk '{print $1}')"
-    mkdir -p "$temp_dst" && curl -fSL -- "$url" | tar -xz --strip-components 1 -C "$temp_dst"
+    temp_dst="${temp_dir}/.$(sha1 "$url")"
+    mkdir -p "$temp_dst" && curl -fSL --retry 3 --retry-max-time 30 -- "$url" | tar -xz --strip-components 1 -C "$temp_dst"
     mkdir -p "$dst" && mv "${temp_dst}/"* "$dst"
     echo "${name} downloaded: '${dst}'"
   fi
@@ -142,6 +157,14 @@ function docker() {
     command='sudo'
   fi
   ${command} -- docker "$@"
+}
+
+function sha1() {
+  if which shasum >/dev/null 2>&1; then
+    echo "$1" | shasum -a1 | awk '{print $1}'
+  else
+    echo "$1" | sha1sum | awk '{print $1}'
+  fi
 }
 
 function arr_contains() {
