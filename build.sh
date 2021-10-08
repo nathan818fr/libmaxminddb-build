@@ -42,7 +42,12 @@ function main() {
   download_if_absent 'libmaxminddb sources' "$libmaxminddb_url" "$libmaxminddb_dir"
 
   # prepare output directory
-  out_dir="${PWD}/out/libmaxminddb_${version}_${platform}"
+  if [[ "${GITHUB_REF:-}" == 'refs/tags/v'* ]]; then
+    out_version="${GITHUB_REF:11}"
+  else
+    out_version="$version"
+  fi
+  out_dir="${PWD}/out/libmaxminddb_${out_version}_${platform}"
   echo "creating output directory: '${out_dir}' ..."
 
   if [[ -d "$out_dir" ]]; then
