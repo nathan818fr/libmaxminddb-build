@@ -1,0 +1,24 @@
+### App
+/workspace
+
+### IDE
+# JetBrains IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# NetBeans
+nbproject/
+nbactions.xml
+nb-configuration.xml
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
