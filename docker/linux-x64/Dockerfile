@@ -1,6 +1,6 @@
-FROM debian:stretch
+FROM debian:buster
 
-# Create Debian Stretch (glibc 2.24) image for building Linux x64 binaries
+# Create Debian Buster (glibc 2.28) image for building Linux x64 binaries
 
 RUN apt-get update -yqq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
