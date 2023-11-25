@@ -48,7 +48,7 @@ jobs:
             platform: 'win32-arm64v8'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Build
         id: build-release
         run: ./build.sh $(cat LIBMAXMINDDB_VERSION.txt) ${{ matrix.platform }}
